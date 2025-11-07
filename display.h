@@ -12,7 +12,7 @@ typedef struct {
 
 // Function declarations only
 bool init_sdl(sdl_t *sdl);
-void update_screen(const sdl_t sdl);
+void update_screen(const sdl_t sdl, const chip8_t chip8);
 void final_cleanup(sdl_t sdl);
 
 #endif // DISPLAY_H
