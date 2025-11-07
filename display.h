@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 #include <stdbool.h>
-#include <chip8.h>
+#include "chip8.h"
 #include "SDL.h"
 
 typedef struct {
