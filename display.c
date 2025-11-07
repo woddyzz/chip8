@@ -40,6 +40,8 @@ void update_screen(const sdl_t sdl) {
 }
 
 void final_cleanup(sdl_t sdl) {
+    SDL_DestroyTexture(sdl.texture);
+    SDL_DestroyRenderer(sdl.renderer);
     SDL_DestroyWindow(sdl.window);
     SDL_Quit();
 }

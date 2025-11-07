@@ -60,4 +60,233 @@ void init_chip8(chip8_t *chip8) {
     chip8->sound_timer = 0;
 
     chip8->state = RUNNING;
+    chip8->draw_flag = 0;
 }
+
+void emulation_cicle(chip8_t *chip8) {
+    chip8->opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];  // sets the opcode to the current instruction
+
+    // clear display
+    if (chip8->opcode == 0x00E0) {  
+        for (int i = 0; i < (64*32); i++) {
+            chip8->display[i] = 0;
+        }
+        chip8->pc += 2;
+    }
+
+    // return from subroutine
+    if (chip8->opcode == 0x00EE) {
+        chip8->sp -= 1;
+        chip8->pc = chip8->stack[chip8->sp];
+        chip8->pc += 2;
+    }
+
+    switch(chip8->opcode & 0xF000) {
+        case 0x0000: {
+            chip8->pc += 2;
+        }
+        case 0x1000: { // jump to location nnn
+            chip8->pc = chip8->opcode & 0x0FFF;
+        }
+        case 0x2000: { // call subroutine at nnn
+            chip8->stack[chip8->sp] = chip8->pc;
+            chip8->sp += 1;
+            chip8->pc = chip8->opcode & 0x0FFF;
+        }
+        case 0x3000: {
+            short int x = (chip8->opcode & 0x0F00) >> 8;
+            if (chip8->V[x] == (chip8->opcode & 0x00FF)) {
+                chip8->pc += 2;
+            }
+        }
+            chip8->pc += 2;
+        case 0x4000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            if (chip8->V[x] != (chip8->opcode & 0x00FF)) {
+                chip8->pc += 2;
+            }
+            chip8->pc += 2;
+        }
+        case 0x5000: {
+            short int x = (chip8->opcode & 0x0F00) >> 8;
+            uint8_t y = (chip8->opcode & 0x00F0) >> 4;
+            if (chip8->V[x] == chip8->V[y]) {
+                chip8->pc += 2;
+            }
+            chip8->pc += 2;
+        }
+        case 0x6000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            chip8->V[x] = chip8->opcode & 0x00FF;
+            chip8->pc += 2;
+        }
+        case 0x7000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            chip8->V[x] += chip8->opcode & 0x00FF;
+            chip8->pc += 2;
+        }
+        case 0x8000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            uint8_t y = (chip8->opcode & 0x00F0) >> 4;
+            uint8_t m = (chip8->opcode & 0x000F);
+            switch(m) {
+                case 0: chip8->V[x] = chip8->V[y];
+                case 1: chip8->V[x] |= chip8->V[y];
+                case 2: chip8->V[x] &= chip8->V[y];
+                case 3: chip8->V[x] ^= chip8->V[y];
+                case 4:
+                    uint16_t sum = chip8->V[x] + chip8->V[y];
+                    if (sum > 255) {
+                        chip8->V[0xF] = 1;
+                    }
+                    else {
+                        chip8->V[0xf] = 0;
+                    }
+                    chip8->V[x] = sum & 0xFF;
+                case 5:
+                    if (chip8->V[x] > chip8->V[y]) {
+                        chip8->V[0xF] = 1;
+                    }
+                    else {
+                        chip8->V[0xF] = 0;
+                    }
+                    chip8->V[x] -= chip8->V[y];
+                case 6:
+                    if (chip8->V[x] % 2 == 1) {
+                        chip8->V[0xF] = 1;
+                    }
+                    else {
+                        chip8->V[0xF] = 0;
+                    }
+                    chip8->V[x] = chip8->V[x] >> 1;
+                case 7:
+                    if (chip8->V[y] > chip8->V[x]) {
+                        chip8->V[0xF] = 1;
+                    }
+                    else {
+                        chip8->V[0xF] = 0;
+                    }
+                    chip8->V[x] = chip8->V[y] - chip8->V[x];
+                case 14:
+                    if (chip8->V[x] & 10000000 == 1) {
+                        chip8->V[0xF] = 1;
+                    }
+                    else {
+                        chip8->V[0xF] = 0;
+                    }
+                    chip8->V[x] = chip8->V[x] << 1;
+            }
+            chip8->pc += 2;
+        }
+        case 0x9000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            uint8_t y = (chip8->opcode & 0x00F0) >> 4;
+            if (chip8->V[x] != chip8->V[y]) {
+                chip8->pc += 2;
+            }
+            chip8->pc += 2;
+        }
+        case 0xA000: {
+            chip8->I = chip8->opcode & 0x0FFF;
+            chip8->pc += 2;
+        }
+        case 0xB000: {
+        uint16_t nnn = chip8->opcode & 0x0FFF;
+            chip8->pc = nnn + chip8->V[0];
+        }
+        case 0xC000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            uint8_t kk = chip8->opcode & 0x00FF;
+            uint8_t random_num = rand() % 256;
+            chip8->V[x] = random_num & kk;
+            chip8->pc += 2;
+        }
+        case 0xD000: {
+            uint8_t x = chip8->V[(chip8->opcode & 0x0F00) >> 8];
+            uint8_t y = chip8->V[(chip8->opcode & 0x00F0) >> 4];
+            uint8_t height = chip8->opcode & 0x000F;
+            uint8_t pixel;
+
+            chip8->V[0xF] = 0;
+            for (int yline = 0; yline < height; yline++) {
+                pixel = chip8->memory[chip8->I + yline];
+                for ( int xline = 0; xline < 8; xline++) {
+                    if ((pixel & (0x80 >> xline)) != 0) {
+                        if (chip8->display[(x + xline + ((y + yline) * 64))] == 1) {
+                            chip8->V[0xF] = 1;
+                        }
+                        chip8->display[x + xline +((y + yline) * 64)] ^= 1;
+                    }
+                }
+            }
+            chip8->draw_flag = 1;
+            chip8->pc += 2;
+        }
+        case 0xE000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            uint8_t kk = chip8->opcode & 0x00FF;
+
+            if (kk == 0x9E) {
+                if (chip8->keys[chip8->V[x]] == 1) {
+                    chip8->pc += 2;
+                }
+            }
+            if (kk == 0xA1) {
+                if (chip8->keys[chip8->V[x]] != 1) {
+                    chip8->pc += 2;
+                }
+            }
+            chip8->pc += 2;
+        }
+        case 0xF000: {
+            uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+            switch(chip8->opcode & 0x00FF) {
+                case 0x0007: {
+                    chip8->V[x] = chip8->delay_timer;
+                }
+                case 0x000A: {
+                    chip8->key_pressed = 0;
+
+                    for (int i = 0; i < 16; i++) {
+                        if (chip8->keys[i] != 0) {
+                            chip8->V[x] = i;
+                            chip8->key_pressed = 1;
+                        }
+                    }
+                    if (!chip8->key_pressed) {
+                        return;
+                    }
+                }
+                case 0x0015: {
+                    chip8->delay_timer = chip8->V[x];
+                }
+                case 0x0018: {
+                    chip8->sound_timer = chip8->V[x];
+                }
+                case 0x001E: {
+                    chip8->I += chip8->V[x];
+                }
+                case 0x0029: {
+                    chip8->I = (chip8->V[x] * 0x5);
+                }
+                case 0x0033: {
+                    chip8->memory[chip8->I] = chip8->V[x] / 100;
+                    chip8->memory[chip8->I + 1] = (chip8->V[x] / 10) %10;
+                    chip8->memory[chip8->I + 2] = (chip8->V[x] %10) %100;
+                }
+                case 0x0055: {
+                    for ( int i = 0; i < x; i++) {
+                        chip8->memory[chip8->I + i] = chip8->V[i];
+                    }
+                    chip8->I += x + 1;
+                }
+                case 0x0065: {
+                    for ( int i = 0; i < x; i++) {
+                        chip8->V[i] = chip8->memory[chip8->I + i];
+                    }
+                    chip8->I += x + 1;
+            }
+            chip8->pc += 2;
+        }
+    }
+}}

@@ -12,7 +12,7 @@ chip8_t cpu;
 sdl_t sdl;
 
 // just closes the window
-void check_game_status(chip8_t *cpu) {
+void handle_input(chip8_t *cpu) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -28,13 +28,19 @@ void check_game_status(chip8_t *cpu) {
 
 void main(int agrc, char **argv){
 
-    init_sdl(&sdl);
+    // initialize the chip8
     init_chip8(&cpu);
 
+    // initialize sdl
+    if (!init_sdl(&sdl)) {
+        SDL_Log("Could not initialize SDL properly %s", SDL_GetError());
+        return;
+    }
+
+    // main loop
     while(cpu.state != QUIT) {
         SDL_Delay(16);
-        check_game_status(&cpu);
+        handle_input(&cpu);
         update_screen(sdl);
-        SDL_RenderClear(sdl.renderer);
     }
 }
