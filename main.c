@@ -42,7 +42,7 @@ void main(int agrc, char **argv){
         SDL_Delay(16);
         handle_input(&cpu);
         if (cpu.draw_flag == 1){
-            update_screen(sdl);
+            update_screen(sdl, cpu);
         }
     }
 }
