@@ -84,14 +84,17 @@ void emulation_cicle(chip8_t *chip8) {
     switch(chip8->opcode & 0xF000) {
         case 0x0000: {
             chip8->pc += 2;
+            break;
         }
         case 0x1000: { // jump to location nnn
             chip8->pc = chip8->opcode & 0x0FFF;
+            break;
         }
         case 0x2000: { // call subroutine at nnn
             chip8->stack[chip8->sp] = chip8->pc;
             chip8->sp += 1;
             chip8->pc = chip8->opcode & 0x0FFF;
+            break;
         }
         case 0x3000: {
             short int x = (chip8->opcode & 0x0F00) >> 8;
@@ -100,12 +103,14 @@ void emulation_cicle(chip8_t *chip8) {
             }
         }
             chip8->pc += 2;
+            break;
         case 0x4000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
             if (chip8->V[x] != (chip8->opcode & 0x00FF)) {
                 chip8->pc += 2;
             }
             chip8->pc += 2;
+            break;
         }
         case 0x5000: {
             short int x = (chip8->opcode & 0x0F00) >> 8;
@@ -114,16 +119,19 @@ void emulation_cicle(chip8_t *chip8) {
                 chip8->pc += 2;
             }
             chip8->pc += 2;
+            break;
         }
         case 0x6000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
             chip8->V[x] = chip8->opcode & 0x00FF;
             chip8->pc += 2;
+            break;
         }
         case 0x7000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
             chip8->V[x] += chip8->opcode & 0x00FF;
             chip8->pc += 2;
+            break;
         }
         case 0x8000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -143,6 +151,7 @@ void emulation_cicle(chip8_t *chip8) {
                         chip8->V[0xf] = 0;
                     }
                     chip8->V[x] = sum & 0xFF;
+                    break;
                 case 5:
                     if (chip8->V[x] > chip8->V[y]) {
                         chip8->V[0xF] = 1;
@@ -151,6 +160,7 @@ void emulation_cicle(chip8_t *chip8) {
                         chip8->V[0xF] = 0;
                     }
                     chip8->V[x] -= chip8->V[y];
+                    break;
                 case 6:
                     if (chip8->V[x] % 2 == 1) {
                         chip8->V[0xF] = 1;
@@ -159,6 +169,7 @@ void emulation_cicle(chip8_t *chip8) {
                         chip8->V[0xF] = 0;
                     }
                     chip8->V[x] = chip8->V[x] >> 1;
+                    break;
                 case 7:
                     if (chip8->V[y] > chip8->V[x]) {
                         chip8->V[0xF] = 1;
@@ -167,6 +178,7 @@ void emulation_cicle(chip8_t *chip8) {
                         chip8->V[0xF] = 0;
                     }
                     chip8->V[x] = chip8->V[y] - chip8->V[x];
+                    break;
                 case 14:
                     if (chip8->V[x] & 10000000 == 1) {
                         chip8->V[0xF] = 1;
@@ -177,6 +189,7 @@ void emulation_cicle(chip8_t *chip8) {
                     chip8->V[x] = chip8->V[x] << 1;
             }
             chip8->pc += 2;
+            break;
         }
         case 0x9000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -185,14 +198,17 @@ void emulation_cicle(chip8_t *chip8) {
                 chip8->pc += 2;
             }
             chip8->pc += 2;
+            break;
         }
         case 0xA000: {
             chip8->I = chip8->opcode & 0x0FFF;
             chip8->pc += 2;
+            break;
         }
         case 0xB000: {
         uint16_t nnn = chip8->opcode & 0x0FFF;
             chip8->pc = nnn + chip8->V[0];
+            break;
         }
         case 0xC000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -200,6 +216,7 @@ void emulation_cicle(chip8_t *chip8) {
             uint8_t random_num = rand() % 256;
             chip8->V[x] = random_num & kk;
             chip8->pc += 2;
+            break;
         }
         case 0xD000: {
             uint8_t x = chip8->V[(chip8->opcode & 0x0F00) >> 8];
@@ -221,6 +238,7 @@ void emulation_cicle(chip8_t *chip8) {
             }
             chip8->draw_flag = 1;
             chip8->pc += 2;
+            break;
         }
         case 0xE000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -237,6 +255,7 @@ void emulation_cicle(chip8_t *chip8) {
                 }
             }
             chip8->pc += 2;
+            break;
         }
         case 0xF000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -287,6 +306,7 @@ void emulation_cicle(chip8_t *chip8) {
                     chip8->I += x + 1;
             }
             chip8->pc += 2;
+            break;
         }
     }
 }}
