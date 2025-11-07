@@ -70,16 +70,19 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_rom(&cpu, "Space Flight.ch8");
+    load_rom(&cpu, "test_opcode.ch8");
 
     // main loop
     while (cpu.state != QUIT) {
-        emulation_cicle(&cpu);
+
+        handle_input(&cpu);
+        for (int i = 0; i < 700 / 60; i++){
+            emulation_cicle(&cpu);
+        }
         if (cpu.draw_flag) {
             update_screen(&sdl, &cpu);
             cpu.draw_flag = 0;
         }
-        handle_input(&cpu);
         SDL_Delay(16); // ~60 FPS
     }
 

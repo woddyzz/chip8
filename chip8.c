@@ -52,6 +52,7 @@ void init_chip8(chip8_t *chip8) {
 
     chip8->state = RUNNING;
     chip8->draw_flag = 0;
+    chip8->ints_per_second = 700;
 }
 
 void emulation_cicle(chip8_t *chip8) {

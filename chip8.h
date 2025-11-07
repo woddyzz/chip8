@@ -20,6 +20,7 @@ typedef struct {
     uint8_t draw_flag;
     uint8_t key_pressed;
     chip8_states_t state;
+    uint32_t ints_per_second;
 } chip8_t;
 
 // function **declarations**
