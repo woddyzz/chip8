@@ -70,20 +70,31 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_rom(&cpu, "test_opcode.ch8");
+    load_rom(&cpu, "tetris.ch8");
 
     // main loop
     while (cpu.state != QUIT) {
 
         handle_input(&cpu);
+
+        uint64_t start_frame_time = SDL_GetPerformanceCounter();
+
         for (int i = 0; i < 700 / 60; i++){
             emulation_cicle(&cpu);
         }
+
+        uint64_t end_frame_time = SDL_GetPerformanceCounter();
+
+        const double time_elapsed = (double)((end_frame_time - start_frame_time) / 1000) / SDL_GetPerformanceFrequency();
+
+        
+        SDL_Delay(16.67f > time_elapsed ? 16.67f - time_elapsed : 0); // ~60 FPS
+
         if (cpu.draw_flag) {
             update_screen(&sdl, &cpu);
             cpu.draw_flag = 0;
         }
-        SDL_Delay(16); // ~60 FPS
+        update_timers(&cpu);
     }
 
     final_cleanup(sdl);

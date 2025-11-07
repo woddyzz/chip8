@@ -26,6 +26,7 @@ typedef struct {
 // function **declarations**
 void init_chip8(chip8_t *chip8);
 void emulation_cicle(chip8_t *chip8);
+void update_timers(chip8_t *chip8);
 void load_rom( chip8_t *chip8, const char *rom_filename);
 
 #endif
