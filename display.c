@@ -34,26 +34,25 @@ bool init_sdl(sdl_t *sdl) {
     return true;
 }
 
-void update_screen(const sdl_t sdl, const chip8_t chip8) {
+void update_screen(const sdl_t *sdl, const chip8_t *chip8) {
     void *pixels;
     int pitch;
 
-    // Lock the texture to get direct pixel access
-    SDL_LockTexture(sdl.texture, NULL, &pixels, &pitch);
+    SDL_LockTexture(sdl->texture, NULL, &pixels, &pitch);
 
     uint32_t *dst = (uint32_t *)pixels;
     for (int y = 0; y < 32; y++) {
         for (int x = 0; x < 64; x++) {
             int i = y * 64 + x;
-            uint32_t color = (chip8.display[i]) ? 0xFFFFFFFF : 0x000000FF;
+            uint32_t color = (chip8->display[i]) ? 0xFFFFFFFF : 0x000000FF;
             dst[y * (pitch / 4) + x] = color;
         }
     }
 
-    SDL_UnlockTexture(sdl.texture);
+    SDL_UnlockTexture(sdl->texture);
 
-    SDL_RenderCopy(sdl.renderer, sdl.texture, NULL, NULL);
-    SDL_RenderPresent(sdl.renderer);
+    SDL_RenderCopy(sdl->renderer, sdl->texture, NULL, NULL);
+    SDL_RenderPresent(sdl->renderer);
 }
 
 void final_cleanup(sdl_t sdl) {
