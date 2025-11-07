@@ -263,6 +263,12 @@ void emulation_cicle(chip8_t *chip8) {
             break;
         }
     }
+    if (chip8->delay_timer > 0) {
+        chip8->delay_timer -= 1;
+    }
+    if (chip8->sound_timer > 0) {
+        chip8->sound_timer -= 1;
+    }
 }
 
 void load_rom(chip8_t *chip8, const char *rom_filename) {

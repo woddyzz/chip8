@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_rom(&cpu, "IBM Logo.ch8");
+    load_rom(&cpu, "c8_test.c8");
 
     // main loop
     while (cpu.state != QUIT) {
