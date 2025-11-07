@@ -41,6 +41,8 @@ void main(int agrc, char **argv){
     while(cpu.state != QUIT) {
         SDL_Delay(16);
         handle_input(&cpu);
-        update_screen(sdl);
+        if (cpu.draw_flag == 1){
+            update_screen(sdl);
+        }
     }
 }
