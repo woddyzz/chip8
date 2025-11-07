@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_rom(&cpu, "tetris.ch8");
+    load_rom(&cpu, "pong.ch8");
 
     // main loop
     while (cpu.state != QUIT) {
