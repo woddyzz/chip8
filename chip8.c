@@ -213,23 +213,17 @@ void emulation_cicle(chip8_t *chip8) {
             uint8_t pixel;
 
             chip8->V[0xF] = 0;
-            for (int row = 0; row < height; row++) {
-                uint8_t sprite = chip8->memory[chip8->I + row];
-                for (int col = 0; col < 8; col++) {
-                    if ((sprite & (0x80 >> col)) != 0) {
-                        int px = chip8->V[x] + col;
-                        int py = chip8->V[y] + row;
-                        if (px >= 64 || py >= 32)
-                            continue; // don't wrap, skip out-of-bounds pixels
-
-                        int index = py * 64 + px;
-                        if (chip8->display[index]) {
+            for (int yline = 0; yline < height; yline++) {
+                pixel = chip8->memory[chip8->I + yline];
+                for ( int xline = 0; xline < 8; xline++) {
+                    if ((pixel & (0x80 >> xline)) != 0) {
+                        if (chip8->display[(x + xline + ((y + yline) * 64))] == 1) {
                             chip8->V[0xF] = 1;
+                        }
+                        chip8->display[x + xline +((y + yline) * 64)] ^= 1;
+                    }
+                }
             }
-            chip8->display[index] ^= 1;
-        }
-    }
-}
             chip8->draw_flag = 1;
             chip8->pc += 2;
             break;
