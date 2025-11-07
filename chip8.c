@@ -260,10 +260,10 @@ void emulation_cicle(chip8_t *chip8) {
         case 0xF000: {
             uint8_t x = (chip8->opcode & 0x0F00) >> 8;
             switch(chip8->opcode & 0x00FF) {
-                case 0x0007: {
+                case 0x07: {
                     chip8->V[x] = chip8->delay_timer;
                 }
-                case 0x000A: {
+                case 0x0A: {
                     chip8->key_pressed = 0;
 
                     for (int i = 0; i < 16; i++) {
@@ -276,30 +276,30 @@ void emulation_cicle(chip8_t *chip8) {
                         return;
                     }
                 }
-                case 0x0015: {
+                case 0x015: {
                     chip8->delay_timer = chip8->V[x];
                 }
-                case 0x0018: {
+                case 0x018: {
                     chip8->sound_timer = chip8->V[x];
                 }
-                case 0x001E: {
+                case 0x01E: {
                     chip8->I += chip8->V[x];
                 }
-                case 0x0029: {
+                case 0x029: {
                     chip8->I = (chip8->V[x] * 0x5);
                 }
-                case 0x0033: {
+                case 0x033: {
                     chip8->memory[chip8->I] = chip8->V[x] / 100;
                     chip8->memory[chip8->I + 1] = (chip8->V[x] / 10) %10;
                     chip8->memory[chip8->I + 2] = (chip8->V[x] %10) %100;
                 }
-                case 0x0055: {
+                case 0x055: {
                     for ( int i = 0; i < x; i++) {
                         chip8->memory[chip8->I + i] = chip8->V[i];
                     }
                     chip8->I += x + 1;
                 }
-                case 0x0065: {
+                case 0x065: {
                     for ( int i = 0; i < x; i++) {
                         chip8->V[i] = chip8->memory[chip8->I + i];
                     }
