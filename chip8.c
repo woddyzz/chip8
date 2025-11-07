@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "chip8.h"
-
-void init_chip8(chip8_t *chip8) {
+    }
     const uint8_t chip8_fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -138,55 +137,44 @@ void emulation_cicle(chip8_t *chip8) {
             uint8_t y = (chip8->opcode & 0x00F0) >> 4;
             uint8_t m = (chip8->opcode & 0x000F);
             switch(m) {
-                case 0: chip8->V[x] = chip8->V[y];
-                case 1: chip8->V[x] |= chip8->V[y];
-                case 2: chip8->V[x] &= chip8->V[y];
-                case 3: chip8->V[x] ^= chip8->V[y];
-                case 4:
+                case 0:
+                    chip8->V[x] = chip8->V[y];
+                    break;
+                case 1:
+                    chip8->V[x] |= chip8->V[y];
+                    break;
+                case 2:
+                    chip8->V[x] &= chip8->V[y];
+                    break;
+                case 3:
+                    chip8->V[x] ^= chip8->V[y];
+                    break;
+                case 4: {
                     uint16_t sum = chip8->V[x] + chip8->V[y];
-                    if (sum > 255) {
-                        chip8->V[0xF] = 1;
-                    }
-                    else {
-                        chip8->V[0xf] = 0;
-                    }
+                    chip8->V[0xF] = (sum > 0xFF) ? 1 : 0;
                     chip8->V[x] = sum & 0xFF;
+                }
                     break;
                 case 5:
-                    if (chip8->V[x] > chip8->V[y]) {
-                        chip8->V[0xF] = 1;
-                    }
-                    else {
-                        chip8->V[0xF] = 0;
-                    }
+                    chip8->V[0xF] = (chip8->V[x] > chip8->V[y]) ? 1 : 0;
                     chip8->V[x] -= chip8->V[y];
                     break;
                 case 6:
-                    if (chip8->V[x] % 2 == 1) {
-                        chip8->V[0xF] = 1;
-                    }
-                    else {
-                        chip8->V[0xF] = 0;
-                    }
-                    chip8->V[x] = chip8->V[x] >> 1;
+                    /* VF = least significant bit before shift */
+                    chip8->V[0xF] = chip8->V[x] & 0x1;
+                    chip8->V[x] >>= 1;
                     break;
                 case 7:
-                    if (chip8->V[y] > chip8->V[x]) {
-                        chip8->V[0xF] = 1;
-                    }
-                    else {
-                        chip8->V[0xF] = 0;
-                    }
+                    chip8->V[0xF] = (chip8->V[y] > chip8->V[x]) ? 1 : 0;
                     chip8->V[x] = chip8->V[y] - chip8->V[x];
                     break;
-                case 14:
-                    if (chip8->V[x] & 10000000 == 1) {
-                        chip8->V[0xF] = 1;
-                    }
-                    else {
-                        chip8->V[0xF] = 0;
-                    }
-                    chip8->V[x] = chip8->V[x] << 1;
+                case 0xE:
+                    /* VF = most significant bit before shift */
+                    chip8->V[0xF] = (chip8->V[x] & 0x80) >> 7;
+                    chip8->V[x] = (chip8->V[x] << 1) & 0xFF;
+                    break;
+                default:
+                    break;
             }
             chip8->pc += 2;
             break;
@@ -263,6 +251,7 @@ void emulation_cicle(chip8_t *chip8) {
                 case 0x07: {
                     chip8->V[x] = chip8->delay_timer;
                 }
+                    break;
                 case 0x0A: {
                     chip8->key_pressed = 0;
 
@@ -270,40 +259,53 @@ void emulation_cicle(chip8_t *chip8) {
                         if (chip8->keys[i] != 0) {
                             chip8->V[x] = i;
                             chip8->key_pressed = 1;
+                            break;
                         }
                     }
                     if (!chip8->key_pressed) {
+                        /* wait for a key press, do not advance PC */
                         return;
                     }
                 }
-                case 0x015: {
+                    break;
+                case 0x15: {
                     chip8->delay_timer = chip8->V[x];
                 }
-                case 0x018: {
+                    break;
+                case 0x18: {
                     chip8->sound_timer = chip8->V[x];
                 }
-                case 0x01E: {
+                    break;
+                case 0x1E: {
                     chip8->I += chip8->V[x];
                 }
-                case 0x029: {
+                    break;
+                case 0x29: {
                     chip8->I = (chip8->V[x] * 0x5);
                 }
-                case 0x033: {
-                    chip8->memory[chip8->I] = chip8->V[x] / 100;
-                    chip8->memory[chip8->I + 1] = (chip8->V[x] / 10) %10;
-                    chip8->memory[chip8->I + 2] = (chip8->V[x] %10) %100;
+                    break;
+                case 0x33: {
+                    chip8->memory[chip8->I]     = chip8->V[x] / 100;
+                    chip8->memory[chip8->I + 1] = (chip8->V[x] / 10) % 10;
+                    chip8->memory[chip8->I + 2] = chip8->V[x] % 10;
                 }
-                case 0x055: {
-                    for ( int i = 0; i < x; i++) {
+                    break;
+                case 0x55: {
+                    for ( int i = 0; i <= x; i++) {
                         chip8->memory[chip8->I + i] = chip8->V[i];
                     }
                     chip8->I += x + 1;
                 }
-                case 0x065: {
-                    for ( int i = 0; i < x; i++) {
+                    break;
+                case 0x65: {
+                    for ( int i = 0; i <= x; i++) {
                         chip8->V[i] = chip8->memory[chip8->I + i];
                     }
                     chip8->I += x + 1;
+                }
+                    break;
+                default:
+                    break;
             }
             chip8->pc += 2;
             break;
