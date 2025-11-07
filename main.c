@@ -37,10 +37,13 @@ void main(int agrc, char **argv){
         return;
     }
 
+    load_rom(&cpu, "IBM Logo.ch8");
+
     // main loop
     while(cpu.state != QUIT) {
         SDL_Delay(16);
         handle_input(&cpu);
+        emulation_cicle(&cpu);
         if (cpu.draw_flag == 1){
             update_screen(sdl, cpu);
         }
