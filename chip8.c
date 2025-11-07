@@ -290,3 +290,41 @@ void emulation_cicle(chip8_t *chip8) {
         }
     }
 }}
+
+void load_rom(chip8_t *chip8, const char *rom_filename) {
+    long rom_length;
+    uint8_t *rom_buffer;
+
+    FILE *rom = fopen(rom_filename, "rb");
+    if (rom != NULL) {
+        fseek(rom, 0, SEEK_END);
+        rom_length = ftell(rom); 
+        rewind(rom);
+
+        rom_buffer = (uint8_t*) malloc(sizeof(uint8_t) * rom_length);
+        if (rom_buffer == NULL) {
+            printf("ERROR: Out of memory\n");
+            exit(EXIT_FAILURE);
+        }
+
+        fread(rom_buffer, sizeof(uint8_t), rom_length, rom); 
+
+        if ((0xFFF - 0x200) >= rom_length) {
+            for(int i = 0; i < rom_length; i++) {
+                chip8->memory[i + 0x200] = rom_buffer[i];
+            }
+        }
+        else {
+            printf("ERROR: ROM file too large\n");
+            exit(EXIT_FAILURE);
+        }
+        
+    }
+    else {
+        printf("ERROR: ROM file does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(rom);
+    free(rom_buffer);
+}

@@ -34,7 +34,21 @@ bool init_sdl(sdl_t *sdl) {
     return true;
 }
 
-void update_screen(const sdl_t sdl) {
+void update_screen(const sdl_t sdl, chip8_t chip8) {
+
+    uint8_t bytes[64*32];
+    uint8_t pitch = 0;
+    SDL_LockTexture(sdl.texture, NULL, &bytes, &pitch);
+    for (int i = 0; i < (64*32); i++) {
+        if (chip8.display[i] == 1) {
+            bytes[i] = 0xFFFFFFFF;
+        }
+        else {
+            bytes[i] = 0x000000FF;
+        }
+    }
+    SDL_UnlockTexture(sdl.texture);
+
     SDL_RenderCopy(sdl.renderer, sdl.texture, NULL, NULL);
     SDL_RenderPresent(sdl.renderer);
 }
