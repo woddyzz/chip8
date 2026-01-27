@@ -19,4 +19,4 @@ A CHIP-8 emulator written in **C**, built from scratch to understand how low-lev
 - Debugging and structuring larger C projects  
 
 ## Purpose
-This project was a hands-on way to learn **systems programming**, **computer architecture**, and **emulation fundamentals**. It also serves as a foundation for building more advanced emulators or game engines.
+This project was a way to learn **systems programming**, **computer architecture**, and **emulation fundamentals**. It also serves as a foundation for building more advanced emulators or game engines.
